@@ -5,7 +5,7 @@ from src.utils import save_json_output
 # Load the video or image
 video_path = "data/testall.mp4"  # Path to your sample video
 
-detections_generator = detect_objects(video_path, show_preview=True, save_sub_objects=True)
+detections_generator = detect_objects(video_path, frame_skip=3, resize_frctor=2, confidence_threshold=0.1, show_preview=True, save_sub_objects=True)
 
 # List to hold all detection results
 all_detections = []

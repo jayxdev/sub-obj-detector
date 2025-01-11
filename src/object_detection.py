@@ -4,14 +4,14 @@ import os
 from .sub_obj_list import sub_objects_list
 from PIL import Image
 from .utils import save_subobject_image
-    
+
 # Initialize the YOLO model
 def initialize_model(model_path='models/yolov8n-oiv7.pt'):
     model = YOLO(model_path)
     return model
 
 # Function to detect objects with sub-object handling and yield results
-def detect_objects(video_path, model=None, frame_skip=5, resize_frctor=2,confidence_threshold=0.1, show_preview=False, save_sub_objects=False, output_dir='./output/sub_objects'):
+def detect_objects(video_path, model=None, frame_skip=3, resize_frctor=2,confidence_threshold=0.3, show_preview=False, save_sub_objects=False, output_dir='./output/sub_objects'):
     if model is None:
         model = initialize_model()
 
@@ -33,20 +33,20 @@ def detect_objects(video_path, model=None, frame_skip=5, resize_frctor=2,confide
     if save_sub_objects and not os.path.exists(output_dir):
         os.makedirs(output_dir)
 
+    inference_time = 1
     while cap.isOpened():
         ret, frame = cap.read()
         if not ret:
             break
 
         frame_id += 1
-
         # Resize frame for processing
         resized_frame = cv2.resize(frame, (frame_width, frame_height))
         sub_obj_image=[]
         if frame_id % frame_skip == 0:
             # Run YOLO detection
             results = model(resized_frame)
-
+            inference_time = results[0].speed['inference']
             frame_detections = []
             for result in results:
                 objects = []
@@ -75,6 +75,14 @@ def detect_objects(video_path, model=None, frame_skip=5, resize_frctor=2,confide
                         other_xmin, other_ymin, other_xmax, other_ymax = map(int, other_obj["bbox"])
                         # Check if the other object is within the bounding box of the current object
                         if xmin < other_xmin < xmax and ymin < other_ymin < ymax:
+                            # Save cropped sub-object images
+                            if save_sub_objects and other_obj["object"] in sub_objects_list.get(other_obj["object"],[]):
+                                # Safeguard dimensions to avoid invalid cropping
+                                sub_ymin = max(0, other_ymin)
+                                sub_ymax = min(frame_height, other_ymax)
+                                sub_xmin = max(0, other_xmin)
+                                sub_xmax = min(frame_width, other_xmax)
+                                save_subobject_image(resized_frame, (sub_xmin, sub_ymin, sub_xmax, sub_ymax), str(frame_id) + "_" + str(obj["class_id"]), other_obj["object"], output_dir)
                             sub_objects.append({
                                 "object": other_obj["object"],
                                 "class_id": other_obj["class_id"],
@@ -105,23 +113,17 @@ def detect_objects(video_path, model=None, frame_skip=5, resize_frctor=2,confide
                 sub_text = f"{sub_label} {sub_object['confidence']:.2f}"
                 cv2.rectangle(resized_frame, (sub_xmin, sub_ymin), (sub_xmax, sub_ymax), (255, 0, 0), 2) # Blue color for sub-objects
                 cv2.putText(resized_frame, sub_text, (sub_xmin, sub_ymin - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2) # Blue color for sub-objects
-                
-                # Save cropped sub-object images
-                if save_sub_objects and sub_label in sub_objects_list.get(label,[]):
-                    # Safeguard dimensions to avoid invalid cropping
-                    sub_ymin = max(0, sub_ymin)
-                    sub_ymax = min(frame_height, sub_ymax)
-                    sub_xmin = max(0, sub_xmin)
-                    sub_xmax = min(frame_width, sub_xmax)
-                    save_subobject_image(resized_frame, (sub_xmin, sub_ymin, sub_xmax, sub_ymax), str(frame_id) + "_" + str(detection["class_id"]), sub_label, output_dir)
-                    
-                
         
         # Write the processed frame to the output video
         out.write(resized_frame)
 
         # Display the video frame if show_preview is True
         if show_preview:
+            fps=int(1000/inference_time)
+            cv2.putText(resized_frame, f"FPS: {fps}s", (10, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
+            cv2.putText(resized_frame, f"Inference Time: {inference_time:.2f}ms", (10, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
+            cv2.putText(resized_frame, f"Green Box: Object", (10, 60), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+            cv2.putText(resized_frame, f"Blue Box: Sub-Object", (10, 80), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2)
             cv2.imshow("Object and Sub-Object Detection", resized_frame)
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
@@ -131,7 +133,6 @@ def detect_objects(video_path, model=None, frame_skip=5, resize_frctor=2,confide
             "frame_id": frame_id,
             "detections": frame_detections,
             "frame": resized_frame
-            # "images": sub_obj_image
         }
 
     cap.release()
