@@ -1,6 +1,6 @@
 import cv2
 from src.object_detection import detect_objects
-from src.json_output import save_json_output
+from src.utils import save_json_output
 
 # Load the video or image
 video_path = "data/testall.mp4"  # Path to your sample video

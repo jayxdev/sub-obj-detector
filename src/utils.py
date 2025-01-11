@@ -1,6 +1,7 @@
 import cv2
 import os
 import numpy as np
+import json
 
 # Function to save cropped sub-object images
 def save_subobject_image(frame, bbox, object_id, subobject_name, output_folder="output"):
@@ -20,3 +21,11 @@ def save_subobject_image(frame, bbox, object_id, subobject_name, output_folder="
     file_name = f"{subobject_name}_{object_id}.jpg"
     output_path = os.path.join(subobject_folder, file_name)
     cv2.imwrite(output_path, sub_object_image)
+
+def save_json_output(detections, output_path="output/detections.json"):
+    # Ensure output folder exists
+    
+    with open(output_path, "w") as f:
+        json.dump(detections, f, indent=4)
+    print(f"Detections saved to {output_path}")    
+
