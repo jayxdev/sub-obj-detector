@@ -1,15 +1,9 @@
 import cv2
 from ultralytics import YOLO
 import os
-from .sub_obj_list import sub_objects
+from .sub_obj_list import sub_objects_list
 from PIL import Image
-import numpy as np
-
-import threading
-
-def save_image_async(sub_object_img, sub_object_filename):
-    # Use a separate thread to save the image
-    threading.Thread(target=cv2.imwrite, args=(sub_object_filename, sub_object_img)).start()
+from .utils import save_subobject_image
     
 # Initialize the YOLO model
 def initialize_model(model_path='models/yolov8n-oiv7.pt'):
@@ -108,27 +102,19 @@ def detect_objects(video_path, model=None, frame_skip=5, resize_frctor=2,confide
             for sub_object in detection["subobjects"]:
                 sub_xmin, sub_ymin, sub_xmax, sub_ymax = map(int, sub_object["bbox"])
                 sub_label = sub_object["object"]
+                sub_text = f"{sub_label} {sub_object['confidence']:.2f}"
+                cv2.rectangle(resized_frame, (sub_xmin, sub_ymin), (sub_xmax, sub_ymax), (255, 0, 0), 2) # Blue color for sub-objects
+                cv2.putText(resized_frame, sub_text, (sub_xmin, sub_ymin - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2) # Blue color for sub-objects
+                
                 # Save cropped sub-object images
-                if save_sub_objects and sub_label in sub_objects:
+                if save_sub_objects and sub_label in sub_objects_list.get(label,[]):
                     # Safeguard dimensions to avoid invalid cropping
                     sub_ymin = max(0, sub_ymin)
                     sub_ymax = min(frame_height, sub_ymax)
                     sub_xmin = max(0, sub_xmin)
                     sub_xmax = min(frame_width, sub_xmax)
-                
-                    # Crop the sub-object region
-                    sub_object_img = resized_frame[sub_ymin:sub_ymax, sub_xmin:sub_xmax]
-                
-                    # Ensure valid image dimensions
-                    if sub_object_img.shape[0] > 0 and sub_object_img.shape[1] > 0:
-                        sub_object_filename = os.path.join(
-                            output_dir, f"frame_{frame_id}_subobject_{sub_object['class_id']}.jpg"
-                        )
-                        sub_object_img = resized_frame[sub_ymin:sub_ymax, sub_xmin:sub_xmax]
-                        save_image_async(sub_object_img, sub_object_filename)
-                        print(f"Saved sub-object image: {sub_object_filename}")
-                    else:
-                        print(f"Invalid sub-object dimensions: {sub_object_img.shape}, Skipping...")
+                    save_subobject_image(resized_frame, (sub_xmin, sub_ymin, sub_xmax, sub_ymax), str(frame_id) + "_" + str(detection["class_id"]), sub_label, output_dir)
+                    
                 
         
         # Write the processed frame to the output video

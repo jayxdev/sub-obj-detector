@@ -14,14 +14,6 @@ all_detections = []
 for detection in detections_generator:
     frame_id = detection["frame_id"]
     detections = detection["detections"]
-    # images = detection["images"]
-    # # Save the images
-    # for image in images:
-    #     image_path = image["sub_object_filename"]
-    #     cv2.imshow("Detected Sub Object", image["sub_object"])y
-    #     cv2.waitKey(1)  # Display the image for 1 millisecond
-    #     cv2.imwrite(image_path, image["sub_object"])
-    # Collect the results in a dictionary
     frame_data = {
         "frame_id": frame_id,
         "detections": detections
