@@ -105,6 +105,11 @@ def detect_objects(video_path, model=None, frame_skip=3, resize_frctor=2,confide
             text = f"{label} {conf:.2f}"
             cv2.rectangle(resized_frame, (xmin, ymin), (xmax, ymax), (0, 255, 0), 2) # Green color for objects
             cv2.putText(resized_frame, text, (xmin, ymin - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2) # Green color for objects
+            fps=int(1000/inference_time)
+            cv2.putText(resized_frame, f"FPS: {fps}s", (10, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
+            cv2.putText(resized_frame, f"Inference Time: {inference_time:.2f}ms", (10, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
+            cv2.putText(resized_frame, f"Green Box: Object", (10, 60), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+            cv2.putText(resized_frame, f"Blue Box: Sub-Object", (10, 80), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2)
             
             # Draw sub-object bounding boxes
             for sub_object in detection["subobjects"]:
@@ -119,11 +124,6 @@ def detect_objects(video_path, model=None, frame_skip=3, resize_frctor=2,confide
 
         # Display the video frame if show_preview is True
         if show_preview:
-            fps=int(1000/inference_time)
-            cv2.putText(resized_frame, f"FPS: {fps}s", (10, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
-            cv2.putText(resized_frame, f"Inference Time: {inference_time:.2f}ms", (10, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
-            cv2.putText(resized_frame, f"Green Box: Object", (10, 60), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
-            cv2.putText(resized_frame, f"Blue Box: Sub-Object", (10, 80), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2)
             cv2.imshow("Object and Sub-Object Detection", resized_frame)
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
