@@ -98,7 +98,6 @@ The `run_detection.py` script performs the following steps:
       }
     ]
   },
-  ...
 ]
 ```
 
