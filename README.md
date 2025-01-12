@@ -1,4 +1,4 @@
-# Object Detection with YOLOv8
+# Sub-Object Detection with YOLOv8
 
 ## Introduction
 This project implements an object detection pipeline that identifies and classifies objects within videos using the YOLOv8 model. The system also handles sub-object detection, draws bounding boxes around detected objects, and saves the results as images and JSON files.
