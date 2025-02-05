@@ -11,7 +11,7 @@ def initialize_model(model_path='models/yolov8n-oiv7.pt'):
     return model
 
 # Function to detect objects with sub-object handling and yield results
-def detect_objects(video_path, model=None, frame_skip=3, resize_frctor=2,confidence_threshold=0.3, show_preview=False, save_sub_objects=False, output_dir='./output/sub_objects'):
+def detect_objects(video_path, model=None, frame_skip=3, resize_frctor=2,confidence_threshold=0.3, show_preview=False, save_sub_objects=False, save_video=False, output_dir='./output/sub_objects'):
     if model is None:
         model = initialize_model()
 
@@ -25,7 +25,8 @@ def detect_objects(video_path, model=None, frame_skip=3, resize_frctor=2,confide
     fps = cap.get(cv2.CAP_PROP_FPS) if cap.get(cv2.CAP_PROP_FPS) > 0 else 30
     
     # Create VideoWriter to save output
-    out = cv2.VideoWriter('./output/output.mp4', cv2.VideoWriter_fourcc(*'mp4v'), fps, (frame_width, frame_height))
+    if save_video:
+        out = cv2.VideoWriter('./output/output.mp4', cv2.VideoWriter_fourcc(*'mp4v'), fps, (frame_width, frame_height))
 
     frame_id = 0
     last_detections = []
@@ -120,7 +121,8 @@ def detect_objects(video_path, model=None, frame_skip=3, resize_frctor=2,confide
                 cv2.putText(resized_frame, sub_text, (sub_xmin, sub_ymin - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2) # Blue color for sub-objects
         
         # Write the processed frame to the output video
-        out.write(resized_frame)
+        if save_video:
+            out.write(resized_frame)
 
         # Display the video frame if show_preview is True
         if show_preview:
@@ -136,8 +138,10 @@ def detect_objects(video_path, model=None, frame_skip=3, resize_frctor=2,confide
         }
 
     cap.release()
-    out.release()
-    cv2.destroyAllWindows()
+    if save_video:
+        out.release()
+    if show_preview:
+        cv2.destroyAllWindows()
 
 # Example Usage
 if __name__ == "__main__":
