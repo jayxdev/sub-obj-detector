@@ -11,7 +11,7 @@ def update_config():
     st.sidebar.title("Settings")
     shared_config["frame_skip"] = st.sidebar.slider("Frame Skip", 1, 30, 5)
     shared_config["confidence_threshold"] = st.sidebar.slider("Confidence Threshold", 0.1, 1.0, 0.5)
-    shared_config["resize_factor"] = st.sidebar.slider("Resize Factor", 0.5, 3.0, 0.5)
+    shared_config["resize_factor"] = st.sidebar.slider("Resize Factor", 0.5, 3.0, 2.0,0.5)
 
 def object_detection_stream(video_path):
     # Real-time object detection generator
