@@ -19,7 +19,7 @@ def detect_objects(video_path, model=None, frame_skip=3, resize_frctor=2,confide
     
     # Video output setup
     frame_width = int(300*resize_frctor)
-    frame_height = inr(200*resize_frctor)
+    frame_height = int(200*resize_frctor)
     
     # Get FPS from the video or set a default value
     fps = cap.get(cv2.CAP_PROP_FPS) if cap.get(cv2.CAP_PROP_FPS) > 0 else 30
