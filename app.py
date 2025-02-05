@@ -4,13 +4,13 @@ from src.object_detection import detect_objects
 import tempfile
 
 # Shared configuration dictionary for real-time updates
-shared_config = {"frame_skip": 5, "confidence_threshold": 0.5}
+shared_config = {"frame_skip": 5, "confidence_threshold": 0.5, "resize_factor": 1.5}
 
 def update_config():
     # Streamlit sliders for real-time updates
     st.sidebar.title("Settings")
     shared_config["frame_skip"] = st.sidebar.slider("Frame Skip", 1, 30, 5)
-    shared_config["confidence_threshold"] = st.sidebar.slider("Confidence Threshold", 0.1, 1.0, 0.5)
+    shared_config["confidence_threshold"] = st.sidebar.slider("Confidence Threshold", 0.1, 1.0, 0.35)
     shared_config["resize_factor"] = st.sidebar.slider("Resize Factor", 0.5, 3.0, 1.5, 0.5)
 
 def object_detection_stream(video_path):
